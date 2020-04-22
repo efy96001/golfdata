@@ -17,12 +17,18 @@ career_money.df  <- career_money.df.prelim %>%
   slice(5:nrow(career_money.df.prelim))
 #To Dataframe
 career_money.df    <- as.data.frame(split(career_money.df, 1:4))%>%
-  mutate(ThisWeek=as.character(career_money_text),
-         LastWeek=as.character(career_money_text.1),
+  mutate(ThisWeek=as.numeric(as.character(career_money_text)),
+         LastWeek=as.numeric(as.character(career_money_text.1)),
          Name=as.character(career_money_text.2),
          MN=as.character(career_money_text.3),
          Earnings=as.numeric(gsub("[\\$,]","",MN)))%>%
   select(ThisWeek,LastWeek,Name,Earnings)
+
+career_money.df %>% filter(ThisWeek<=75)%>%
+  ggplot(aes(reorder(Name,Earnings),Earnings))+
+  scale_y_continuous(labels = scales::dollar)+
+  geom_col()+
+  coord_flip()
 
 ###Year to Year Earnings
 #'https://www.pgatour.com/content/pgatour/stats/stat.109.y2020.html'
@@ -40,6 +46,7 @@ yearVector <- as.vector(years.df$vec)
 ##
 #what to go into function 
 year_money_url    <- 'https://www.pgatour.com/content/pgatour/stats/stat.109.y2019.html'
+#year_money_url    <- 'https://www.pgatour.com/content/pgatour/stats/stat.109.y2007.html'
 year_money_code   <- read_html(year_money_url)
 year_money        <- html_nodes(year_money_code,'td , .col-stat')
 year_money_text   <- html_text(year_money,trim=T)
@@ -60,6 +67,13 @@ year_money.df    <- as.data.frame(split(year_money.df, 1:6))%>%
   replace_na(list(Victories=0))
 ##
 t <- year_money.df %>% mutate(EperStart=Earnings/Events)
+
+t %>% filter(Rank<=75)%>%
+  ggplot(aes(reorder(Name,EperStart),EperStart, colour=Events))+
+  scale_y_continuous(labels = scales::dollar())
+  geom_col()+
+  coord_flip()
+
 
 y_y_earnings<-
 
